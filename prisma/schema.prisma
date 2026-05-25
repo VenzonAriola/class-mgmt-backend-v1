@@ -26,6 +26,30 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
+model Department {
+  id        Int  @id @default(autoincrement())
+  code      String   @unique @db.VarChar(10)
+  name      String   @db.VarChar(255) 
+  description String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  //relations
+  subjects Subjects[]
+}
+
+model Subjects {
+    id           Int     @id @default(autoincrement())
+    departmentId Int
+    code         String     @unique @db.VarChar(10)
+    name         String     @db.VarChar(255)
+    description  String?    @db.Text
+    createdAt    DateTime   @default(now())
+    updatedAt    DateTime   @updatedAt
+
+    //relations
+    department Department @relation(fields: [departmentId], references: [id])
+}
 enum ROLE {
   STUDENT
   TEACHER
