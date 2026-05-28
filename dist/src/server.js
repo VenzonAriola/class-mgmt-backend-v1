@@ -1,15 +1,11 @@
 import { config } from 'dotenv';
-import { connectDB } from './db/prisma';
+import { connectDB } from './lib/prisma';
 import express from 'express';
 import subjectsRouter from './routes/subjects';
 import cors from 'cors';
-import securityMiddleware from './middleware/security';
-
-config()
-
+config();
 const app = express();
 const PORT = 5001;
-
 const corsOptions = {
     origin: process.env.FRONTEND_URL || 'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -17,25 +13,17 @@ const corsOptions = {
     credentials: true,
     optionsSuccessStatus: 204,
 };
-
 app.use(cors(corsOptions));
 app.options(/.*/, cors(corsOptions));
-
 //body parser
 app.use(express.json());
-app.use(securityMiddleware);
 app.use(express.urlencoded({ extended: true }));
-
 app.use('/api/subjects', subjectsRouter);
-connectDB()
-
-
-
-
+connectDB();
 app.get('/', (req, res) => {
-  res.send('Welcome to the Class Management System API!');
+    res.send('Welcome to the Class Management System API!');
 });
-
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });
+//# sourceMappingURL=server.js.map

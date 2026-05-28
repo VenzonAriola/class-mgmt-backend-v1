@@ -13,45 +13,97 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  firstName      String
-  lastName       String
-  email     String   @unique
-  password  String
+  id          String   @id @default(uuid())
+  firstName   String
+  lastName    String
+  email       String   @unique
+  password    String
   phoneNumber String?
-  isVerified Boolean  @default(false)
-  role     ROLE
-  imageUrl String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isVerified  Boolean  @default(false)
+  role        ROLE
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  //relations
+  classes     Classes[]
+  enrollments Enrollments[]
 }
 
 model Department {
-  id        Int  @id @default(autoincrement())
-  code      String   @unique @db.VarChar(10)
-  name      String   @db.VarChar(255) 
+  id          Int      @id @default(autoincrement())
+  code        String   @unique @db.VarChar(10)
+  name        String   @db.VarChar(255)
   description String?  @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   //relations
   subjects Subjects[]
 }
 
 model Subjects {
-    id           Int     @id @default(autoincrement())
-    departmentId Int
-    code         String     @unique @db.VarChar(10)
-    name         String     @db.VarChar(255)
-    description  String?    @db.Text
-    createdAt    DateTime   @default(now())
-    updatedAt    DateTime   @updatedAt
+  id           Int      @id @default(autoincrement())
+  departmentId Int
+  code         String   @unique @db.VarChar(10)
+  name         String   @db.VarChar(255)
+  description  String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-    //relations
-    department Department @relation(fields: [departmentId], references: [id])
+  //relations
+  department Department @relation(fields: [departmentId], references: [id])
+  classes    Classes[]
 }
+
+model Classes {
+  id             Int          @id @default(autoincrement())
+  subjectId      Int
+  teacherId      String
+  inviteCode     String       @unique
+  name           String       @db.VarChar(255)
+  bannerCldPubId String?      @db.Text
+  bannerUrl      String?      @db.Text
+  description    String?      @db.Text
+  capacity       Int          @default(50)
+  status         class_status @default(active)
+  schedule       Json[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  //relations
+  subject     Subjects      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacher     User          @relation(fields: [teacherId], references: [id], onDelete: Restrict)
+  enrollments Enrollments[]
+
+  @@index([subjectId])
+  @@index([teacherId])
+}
+
+model Enrollments {
+  id        Int      @id @default(autoincrement())
+  studentId String
+  classId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  //relations
+  student User    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  class   Classes @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, classId])
+  @@index([studentId])
+  @@index([classId])
+}
+
 enum ROLE {
   STUDENT
   TEACHER
   ADMIN
+}
+
+enum class_status {
+  active
+  inactive
+  archived
 }
