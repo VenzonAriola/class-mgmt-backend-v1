@@ -7,10 +7,10 @@
 *
 * 🟢 You can import this file directly.
 */
-export const ROLE = {
-    STUDENT: 'STUDENT',
-    TEACHER: 'TEACHER',
-    ADMIN: 'ADMIN'
+export const Role = {
+    student: 'student',
+    teacher: 'teacher',
+    admin: 'admin'
 };
 export const class_status = {
     active: 'active',

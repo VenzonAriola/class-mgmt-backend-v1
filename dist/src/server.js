@@ -1,3 +1,5 @@
+import AgentApi from 'apminsight';
+AgentApi.config();
 import { config } from 'dotenv';
 import { connectDB } from './db/prisma';
 import express from 'express';

@@ -40,6 +40,9 @@ export const JsonNull = runtime.JsonNull;
 export const AnyNull = runtime.AnyNull;
 export const ModelName = {
     User: 'User',
+    Session: 'Session',
+    Account: 'Account',
+    Verification: 'Verification',
     Department: 'Department',
     Subjects: 'Subjects',
     Classes: 'Classes',
@@ -56,14 +59,45 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 });
 export const UserScalarFieldEnum = {
     id: 'id',
-    firstName: 'firstName',
-    lastName: 'lastName',
+    name: 'name',
     email: 'email',
-    password: 'password',
-    phoneNumber: 'phoneNumber',
-    isVerified: 'isVerified',
+    emailVerified: 'emailVerified',
+    image: 'image',
     role: 'role',
-    imageUrl: 'imageUrl',
+    imageCldPubId: 'imageCldPubId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+};
+export const SessionScalarFieldEnum = {
+    id: 'id',
+    expiresAt: 'expiresAt',
+    token: 'token',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    ipAddress: 'ipAddress',
+    userAgent: 'userAgent',
+    userId: 'userId'
+};
+export const AccountScalarFieldEnum = {
+    id: 'id',
+    accountId: 'accountId',
+    providerId: 'providerId',
+    userId: 'userId',
+    accessToken: 'accessToken',
+    refreshToken: 'refreshToken',
+    idToken: 'idToken',
+    accessTokenExpiresAt: 'accessTokenExpiresAt',
+    refreshTokenExpiresAt: 'refreshTokenExpiresAt',
+    scope: 'scope',
+    password: 'password',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+};
+export const VerificationScalarFieldEnum = {
+    id: 'id',
+    identifier: 'identifier',
+    value: 'value',
+    expiresAt: 'expiresAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
 };
