@@ -38,14 +38,14 @@ const securityMiddleware = async (req: Request, res: Response, next: NextFunctio
             })
         )
 
-        const arcjetRequest = ArcjetNodeRequest = {
+        const arcjetRequest = {
             headers: req.headers,
             method: req.method,
             url: req.originalUrl ?? req.url,
             socket: {remoteAddress: req.socket.remoteAddress ?? req.ip ?? '0.0.0.0'},
         }
 
-        const decission = await client.protect(arcjetRquest);
+        const decission = await client.protect(arcjetRequest);
 
         if(decission.isDenied() && decission.reason.isBot()) {
             return res.status(403).json({ error: "Forbidden", message: "Bot request is not allowed." });

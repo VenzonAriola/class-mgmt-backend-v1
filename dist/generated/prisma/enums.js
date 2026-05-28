@@ -12,4 +12,9 @@ export const ROLE = {
     TEACHER: 'TEACHER',
     ADMIN: 'ADMIN'
 };
+export const class_status = {
+    active: 'active',
+    inactive: 'inactive',
+    archived: 'archived'
+};
 //# sourceMappingURL=enums.js.map

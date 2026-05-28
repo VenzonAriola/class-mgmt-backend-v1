@@ -41,7 +41,9 @@ export const AnyNull = runtime.AnyNull;
 export const ModelName = {
     User: 'User',
     Department: 'Department',
-    Subjects: 'Subjects'
+    Subjects: 'Subjects',
+    Classes: 'Classes',
+    Enrollments: 'Enrollments'
 };
 /*
  * Enums
@@ -79,6 +81,28 @@ export const SubjectsScalarFieldEnum = {
     code: 'code',
     name: 'name',
     description: 'description',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+};
+export const ClassesScalarFieldEnum = {
+    id: 'id',
+    subjectId: 'subjectId',
+    teacherId: 'teacherId',
+    inviteCode: 'inviteCode',
+    name: 'name',
+    bannerCldPubId: 'bannerCldPubId',
+    bannerUrl: 'bannerUrl',
+    description: 'description',
+    capacity: 'capacity',
+    status: 'status',
+    schedule: 'schedule',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+};
+export const EnrollmentsScalarFieldEnum = {
+    id: 'id',
+    studentId: 'studentId',
+    classId: 'classId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
 };

@@ -1,4 +1,4 @@
-import { prisma } from "../lib/prisma";
+import { prisma } from "../db/prisma";
 // Get all subjects
 export const getAllSubjects = async (req, res) => {
     try {

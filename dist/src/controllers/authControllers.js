@@ -1,10 +1,6 @@
-export const userRoles = ["student", "teacher", "admin"] as const;
-
-export type UserRole = (typeof userRoles)[number];
-
-export const defaultUserRole: UserRole = "student";
-
-export const betterAuthPrismaSchema = String.raw`
+export const userRoles = ["student", "teacher", "admin"];
+export const defaultUserRole = "student";
+export const betterAuthPrismaSchema = String.raw `
 enum Role {
   student
   teacher
@@ -79,3 +75,4 @@ model Verification {
   @@map("verification")
 }
 `;
+//# sourceMappingURL=authControllers.js.map

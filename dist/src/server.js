@@ -1,8 +1,11 @@
 import { config } from 'dotenv';
-import { connectDB } from './lib/prisma';
+import { connectDB } from './db/prisma';
 import express from 'express';
 import subjectsRouter from './routes/subjects';
 import cors from 'cors';
+import securityMiddleware from './middleware/security';
+import { toNodeHandler } from 'better-auth/node';
+import { auth } from './lib/auth';
 config();
 const app = express();
 const PORT = 5001;
@@ -13,10 +16,12 @@ const corsOptions = {
     credentials: true,
     optionsSuccessStatus: 204,
 };
+app.all('/api/auth/*splat', toNodeHandler(auth));
 app.use(cors(corsOptions));
 app.options(/.*/, cors(corsOptions));
 //body parser
 app.use(express.json());
+app.use(securityMiddleware);
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/subjects', subjectsRouter);
 connectDB();
