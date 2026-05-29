@@ -10,7 +10,7 @@
     //"moduleResolution": "node",
 
     /* Project structure */
-    "rootDir": "./src",
+    "rootDir": ".",
     "outDir": "./dist",
 
     /* Type safety */
@@ -31,5 +31,6 @@
     /* Environment types */
     "types": ["node"]
   },
-  "include": ["src","generated","**/*.ts"],
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "generated", "dist"]
 }

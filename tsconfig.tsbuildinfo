@@ -1,0 +1,1 @@
+{"root":["./src/express.d.ts","./src/server.ts","./src/type.d.ts","./src/config/arcjet.ts","./src/controllers/subjectscontoller.ts","./src/db/prisma.ts","./src/lib/auth.ts","./src/middleware/security.ts","./src/routes/subjects.ts"],"errors":true,"version":"6.0.3"}
