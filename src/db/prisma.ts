@@ -8,13 +8,10 @@ if (!rawConnectionString) {
   throw new Error("DATABASE_URL is not defined in environment variables");
 }
 
-const normalizedConnectionString = rawConnectionString.replace(
-  /sslmode=(prefer|require|verify-ca)/gi,
-  "sslmode=verify-full",
-);
-
 const adapter = new PrismaPg({
-  connectionString: normalizedConnectionString,
+  connectionString: rawConnectionString,
+  max: 5,
+  idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 15000,
 });
 const prisma = new PrismaClient({ adapter });
