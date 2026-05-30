@@ -5,6 +5,8 @@ import { config } from 'dotenv';
 import { connectDB } from './db/prisma';
 import express from 'express';
 import subjectsRouter from './routes/subjects';
+import usersRouter from './routes/user';
+import classesRouter from './routes/classes';
 import cors from 'cors';
 import securityMiddleware from './middleware/security';
 import { toNodeHandler } from 'better-auth/node';
@@ -34,6 +36,8 @@ app.use(securityMiddleware);
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/subjects', subjectsRouter);
+app.use('/api/users', usersRouter);
+app.use('/api/classes', classesRouter);
 connectDB()
 
 
