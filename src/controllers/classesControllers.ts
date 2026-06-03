@@ -3,41 +3,6 @@ import type { Prisma } from "../../generated/prisma/client";
 import type { Request, Response } from "express";
 
 
-export const postClasses = async (req: Request, res: Response) => {
-    try {
-        const { name, subjectId, teacherId, description, bannerCldPubId, bannerUrl, capacity, status, } = req.body;  
-
-        const newClass = await prisma.classes.create({
-            data: {
-                name,
-                description,
-                bannerCldPubId,
-                bannerUrl,
-                capacity,
-                status,
-                subject: {
-                    connect: { id: subjectId }
-                },
-                teacher: {
-                    connect: { id: teacherId }
-                },
-                inviteCode: Math.random().toString(36).substring(2, 8).toUpperCase(), // Generate a random invite code
-                schedule:[]
-            }
-        });
-
-        if(!newClass) {
-            return res.status(400).json({ error: "Failed to create class." });
-        }
-
-        res.status(201).json(newClass);
-    }
-    catch (error) {
-        console.error("Error creating class:", error);
-        res.status(500).json({ error: "An error occurred while creating the class." });
-    }
-}
-
 //Get All Classes
 export const getAllClasses = async (req:Request, res: Response) => {
     try{ 
@@ -96,5 +61,72 @@ export const getAllClasses = async (req:Request, res: Response) => {
     } catch (error){
         console.log("Error fetching classes:", error)
         res.status(500).json({error: "An error occurred while fetching classes."})
+    }
+}
+
+//Get Class Details with teachers, subject and department
+export const getClassDetails = async (req: Request, res: Response) => {
+    try {
+        const classId = Number(req.params.id);
+
+        if (!Number.isFinite(classId)) {
+            return res.status(400).json({ error: "Invalid class ID" });
+        }
+
+        const classDetails = await prisma.classes.findUnique({
+            where: { id: classId },
+            include: {
+                subject: {
+                    include: {
+                        department: true,
+                    },
+                },
+                teacher: true,
+            },
+        });
+
+        if (!classDetails) {
+            return res.status(404).json({ error: "Class not found" });
+        }
+
+        res.status(200).json(classDetails);
+    } catch (error) {
+        console.error("Error fetching class details:", error);
+        res.status(500).json({ error: "An error occurred while fetching class details." });
+    }
+};
+
+export const postClasses = async (req: Request, res: Response) => {
+    try {
+        const { name, subjectId, teacherId, description, bannerCldPubId, bannerUrl, capacity, status, } = req.body;  
+
+        const newClass = await prisma.classes.create({
+            data: {
+                name,
+                description,
+                bannerCldPubId,
+                bannerUrl,
+                capacity,
+                status,
+                subject: {
+                    connect: { id: subjectId }
+                },
+                teacher: {
+                    connect: { id: teacherId }
+                },
+                inviteCode: Math.random().toString(36).substring(2, 8).toUpperCase(), // Generate a random invite code
+                schedule:[]
+            }
+        });
+
+        if(!newClass) {
+            return res.status(400).json({ error: "Failed to create class." });
+        }
+
+        res.status(201).json(newClass);
+    }
+    catch (error) {
+        console.error("Error creating class:", error);
+        res.status(500).json({ error: "An error occurred while creating the class." });
     }
 }
