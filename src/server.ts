@@ -7,6 +7,7 @@ import express from 'express';
 import subjectsRouter from './routes/subjects';
 import usersRouter from './routes/user';
 import classesRouter from './routes/classes';
+import departmentsRouter from './routes/department';
 import cors from 'cors';
 import securityMiddleware from './middleware/security';
 import { toNodeHandler } from 'better-auth/node';
@@ -38,6 +39,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/subjects', subjectsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/classes', classesRouter);
+app.use('/api/departments',departmentsRouter);
 connectDB()
 
 
