@@ -6,7 +6,7 @@
   "scripts": {
     "postinstall": "node ./scripts/postinstall.cjs",
     "dev": "tsx watch src/server.ts",
-    "build": "node ./scripts/postinstall.cjs && tsc",
+    "build": "node ./scripts/build.cjs",
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
