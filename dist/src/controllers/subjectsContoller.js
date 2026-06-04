@@ -47,4 +47,57 @@ export const getAllSubjects = async (req, res) => {
         res.status(500).json({ error: "An error occurred while fetching subjects." });
     }
 };
+//Get Subject Details
+export const getSubjectDetails = async (req, res) => {
+    try {
+        const subjectId = Number(req.params.id);
+        if (!Number.isFinite(subjectId)) {
+            return res.status(400).json({ error: "Invalid subject ID." });
+        }
+        const subjectDetails = await prisma.subjects.findUnique({
+            where: { id: subjectId },
+            include: {
+                department: true,
+                classes: {
+                    include: {
+                        teacher: true,
+                    },
+                },
+            },
+        });
+        if (!subjectDetails) {
+            return res.status(404).json({ error: "Subject not found." });
+        }
+        res.status(200).json({ data: subjectDetails });
+    }
+    catch (error) {
+        console.error("Error fetching subject details:", error);
+        res.status(500).json({ error: "An error occurred while fetching subject details." });
+    }
+};
+//Post Create a Subject
+export const createSubject = async (req, res) => {
+    try {
+        const { name, code, description, departmentId } = req.body;
+        if (!name || !code || !departmentId) {
+            return res.status(400).json({ error: "Name, code, and departmentId are required." });
+        }
+        const newSubject = await prisma.subjects.create({
+            data: {
+                name,
+                code,
+                description,
+                departmentId
+            }
+        });
+        if (!newSubject) {
+            return res.status(500).json({ error: "Failed to create subject." });
+        }
+        res.status(201).json({ newSubject });
+    }
+    catch (error) {
+        console.error("Error creating subject:", error);
+        res.status(500).json({ error: "An error occurred while creating the subject." });
+    }
+};
 //# sourceMappingURL=subjectsContoller.js.map

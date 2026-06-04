@@ -1,18 +1,13 @@
 import { prisma } from "../db/prisma";
-import type { Prisma } from "../../generated/prisma/client";
-import type { Request, Response } from "express";
-
 // Get all users
-export const getAllUsers = async (req: Request, res: Response) => {
+export const getAllUsers = async (req, res) => {
     try {
         const { search, role, page = 1, limit = 10 } = req.query;
         const currentPage = Math.max(1, +page);
         const limitPerPage = Math.max(1, +limit);
-
         const offset = (currentPage - 1) * limitPerPage;
-        const filterConditions: Prisma.UserWhereInput[] = [];
-        const insensitive = 'insensitive' as Prisma.QueryMode;
-
+        const filterConditions = [];
+        const insensitive = 'insensitive';
         // Search by user name or email
         if (search) {
             filterConditions.push({
@@ -22,21 +17,16 @@ export const getAllUsers = async (req: Request, res: Response) => {
                 ]
             });
         }
-
         // Filter by role (exact match)
         if (role) {
             filterConditions.push({
-                role: String(role) as any
+                role: String(role)
             });
         }
-
-        const whereCondition: Prisma.UserWhereInput =
-            filterConditions.length > 0 ? { AND: filterConditions } : {};
-
+        const whereCondition = filterConditions.length > 0 ? { AND: filterConditions } : {};
         // Count query using prisma sql count(*) with the same where clause
         const totalCount = await prisma.user.count({ where: whereCondition });
         const totalPages = Math.ceil(totalCount / limitPerPage);
-
         // Data query with orderBy user.createdAt desc, limit, offset
         const users = await prisma.user.findMany({
             where: whereCondition,
@@ -56,7 +46,6 @@ export const getAllUsers = async (req: Request, res: Response) => {
                 updatedAt: true,
             }
         });
-
         res.status(200).json({
             data: users,
             pagination: {
@@ -72,3 +61,4 @@ export const getAllUsers = async (req: Request, res: Response) => {
         res.status(500).json({ error: "An error occurred while fetching users." });
     }
 };
+//# sourceMappingURL=usersController.js.map
