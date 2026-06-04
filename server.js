@@ -1,16 +1,12 @@
 // Bootstrap file for platforms that run `node server.js` by default (e.g., Render).
-// This forwards execution to the compiled output in `dist/server.js`.
+// This forwards execution to the compiled output in `dist/server.js` or `dist/src/server.js`.
 import path from 'path';
-import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Try multiple common build output locations so this bootstrap works
-// whether `tsc` emitted `dist/server.js` or `dist/src/server.js`.
+// Use process.cwd() to ensure we find compiled output relative to where npm runs,
+// not relative to where this file is located.
 const candidates = [
-  path.join(__dirname, 'dist', 'server.js'),
-  path.join(__dirname, 'dist', 'src', 'server.js'),
+  path.join(process.cwd(), 'dist', 'src', 'server.js'),
+  path.join(process.cwd(), 'dist', 'server.js'),
 ];
 
 async function start() {
