@@ -18,8 +18,20 @@ config()
 const app = express();
 const PORT = 5001;
 
+const allowedOrigins = [
+    process.env.FRONTEND_URL?.replace(/\/$/, '') || 'http://localhost:5173',
+    'https://class-mgmt-frontend-v1.vercel.app',
+];
+
 const corsOptions = {
-    origin: [process.env.FRONTEND_URL || 'http://localhost:5173', 'https://class-mgmt-frontend-v1.vercel.app/'],
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+        console.log('[CORS] Origin:', origin);
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error(`Origin ${origin} not allowed by CORS`));
+        }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -27,7 +39,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options(/.*/, cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.all('/api/auth/*splat', toNodeHandler(auth));
 
@@ -39,7 +51,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/subjects', subjectsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/classes', classesRouter);
-app.use('/api/departments',departmentsRouter);
+app.use('/api/departments', departmentsRouter);
+
+// Allow legacy/root frontend paths in case the frontend is not using the /api prefix
+app.use('/subjects', subjectsRouter);
+app.use('/users', usersRouter);
+app.use('/classes', classesRouter);
+app.use('/departments', departmentsRouter);
 connectDB()
 
 
