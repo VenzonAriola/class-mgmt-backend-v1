@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "postinstall": "prisma generate",
+    "postinstall": "node ./scripts/postinstall.js",
     "dev": "tsx watch src/server.ts",
-    "build": "prisma generate && tsc",
+    "build": "node ./scripts/postinstall.js && tsc",
     "start": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -70,12 +70,17 @@ export const getSubjectDetails = async (req: Request, res: Response) => {
             where: { id: subjectId },
             include: {
                 department: true,
+                classes: {
+                    include: {
+                        teacher: true,
+                    },
+                },
             },
         });
         if (!subjectDetails) {
             return res.status(404).json({ error: "Subject not found." });
         }
-        res.status(200).json({ subjectDetails });
+        res.status(200).json({ data: subjectDetails });
     } catch (error) {
         console.error("Error fetching subject details:", error);
         res.status(500).json({ error: "An error occurred while fetching subject details." });
