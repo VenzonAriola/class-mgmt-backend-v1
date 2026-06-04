@@ -2,11 +2,17 @@
 // This forwards execution to the compiled output in `dist/server.js` or `dist/src/server.js`.
 import path from 'path';
 
-// Use process.cwd() to ensure we find compiled output relative to where npm runs,
-// not relative to where this file is located.
+// Determine the project root. If cwd ends with /src, strip it (happens on Render).
+let root = process.cwd();
+if (root.endsWith('/src') || root.endsWith('\\src')) {
+  root = root.slice(0, -4);
+}
+
+// Try multiple common build output locations so this bootstrap works
+// whether `tsc` emitted `dist/server.js` or `dist/src/server.js`.
 const candidates = [
-  path.join(process.cwd(), 'dist', 'src', 'server.js'),
-  path.join(process.cwd(), 'dist', 'server.js'),
+  path.join(root, 'dist', 'src', 'server.js'),
+  path.join(root, 'dist', 'server.js'),
 ];
 
 async function start() {
