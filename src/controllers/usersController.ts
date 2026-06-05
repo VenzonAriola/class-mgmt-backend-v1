@@ -2,10 +2,20 @@ import { prisma } from "../db/prisma";
 import type { Prisma } from "../../generated/prisma/client";
 import type { Request, Response } from "express";
 
+// Helper to normalize query parameters from string | string[] | undefined to string | undefined
+const normalizeQueryParam = (param: string | string[] | undefined): string | undefined => {
+    if (typeof param === 'string') return param;
+    if (Array.isArray(param)) return param[0];
+    return undefined;
+};
+
 // Get all users
 export const getAllUsers = async (req: Request, res: Response) => {
     try {
-        const { search, role, page = 1, limit = 10 } = req.query;
+        const search = normalizeQueryParam(req.query.search as any);
+        const role = normalizeQueryParam(req.query.role as any);
+        const page = normalizeQueryParam(req.query.page as any) || '1';
+        const limit = normalizeQueryParam(req.query.limit as any) || '10';
         const currentPage = Math.max(1, +page);
         const limitPerPage = Math.max(1, +limit);
 
@@ -76,7 +86,10 @@ export const getAllUsers = async (req: Request, res: Response) => {
 //Get user details with role specific info
 export const getUserDetails = async (req: Request, res: Response) => {
     try {
-        const userId = req.params.id;
+        const userId = normalizeQueryParam(req.params.id as any);
+        if (!userId) {
+            return res.status(400).json({ error: "Invalid user ID." });
+        }
 
         const userRecord = await prisma.user.findUnique({
             where: { id: userId },
@@ -105,7 +118,11 @@ export const getUserDetails = async (req: Request, res: Response) => {
 export const getUserDepartments = async (req: Request, res: Response) => {
     try {
 
-        const userId = req.params.id;
+        const userId = normalizeQueryParam(req.params.id as any);
+        if (!userId) {
+            return res.status(400).json({ error: "Invalid user ID." });
+        }
+
         const userRecord = await prisma.user.findUnique({
             where: { id: userId },
             select: {
@@ -170,7 +187,11 @@ export const getUserDepartments = async (req: Request, res: Response) => {
 //List subjects associated with a user (for teachers and students)
 export const getUserSubjects = async (req: Request, res: Response) => {
     try {
-        const userId = req.params.id;
+        const userId = normalizeQueryParam(req.params.id as any);
+        if (!userId) {
+            return res.status(400).json({ error: "Invalid user ID." });
+        }
+
         const userRecord = await prisma.user.findUnique({
             where: { id: userId },
             select: {
