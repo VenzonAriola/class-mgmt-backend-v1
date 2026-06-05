@@ -72,3 +72,160 @@ export const getAllUsers = async (req: Request, res: Response) => {
         res.status(500).json({ error: "An error occurred while fetching users." });
     }
 };
+
+//Get user details with role specific info
+export const getUserDetails = async (req: Request, res: Response) => {
+    try {
+        const userId = req.params.id;
+
+        const userRecord = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                emailVerified: true,
+                image: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+        });
+        if (!userRecord) {
+            return res.status(404).json({ error: "User not found." });
+        }
+        res.status(200).json({ data: userRecord });
+    } catch (error) {
+        console.error("Error fetching user details:", error);
+        res.status(500).json({ error: "An error occurred while fetching user details." });
+    }
+};
+
+//List departments associated with a user (for teachers and students)
+export const getUserDepartments = async (req: Request, res: Response) => {
+    try {
+
+        const userId = req.params.id;
+        const userRecord = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                role: true,
+            },
+        });
+        if (!userRecord) {
+            return res.status(404).json({ error: "User not found." });
+        }
+        if (userRecord.role === 'admin') {
+            return res.status(403).json({ error: "Admins do not have associated departments." });
+        }
+        // Departments are linked to Subjects -> Classes -> (teacherId OR enrollments.studentId)
+        const departments = await prisma.department.findMany({
+            where: {
+                OR: [
+                    // user is a teacher for any class in any subject of the department
+                    {
+                        subjects: {
+                            some: {
+                                classes: {
+                                    some: {
+                                        teacherId: userId,
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    // user is a student enrolled in any class in any subject of the department
+                    {
+                        subjects: {
+                            some: {
+                                classes: {
+                                    some: {
+                                        enrollments: {
+                                            some: {
+                                                studentId: userId
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            select: {
+                id: true,
+                name: true,
+                description: true,
+            }
+        });
+        res.status(200).json({ data: departments });
+
+
+    } catch (error) {
+        console.error("Error fetching user departments:", error);
+        res.status(500).json({ error: "An error occurred while fetching user departments." });
+    }
+};
+
+//List subjects associated with a user (for teachers and students)
+export const getUserSubjects = async (req: Request, res: Response) => {
+    try {
+        const userId = req.params.id;
+        const userRecord = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                role: true,
+                id: true
+            },
+        });
+
+        if (!userRecord) {
+            return res.status(404).json({ error: "User not found." });
+        }
+        if (userRecord.role === 'admin') {
+            return res.status(403).json({ error: "Admins do not have associated subjects." });
+        }
+        // Subjects are linked to Classes -> (teacherId OR enrollments.studentId)
+        const subjects = await prisma.subjects.findMany({
+            where: {
+                OR: [
+                    // user is a teacher for any class in the subject
+                    {
+                        classes: {
+                            some: {
+                                teacherId: userId,
+                            }
+                        }
+                    },
+                    // user is a student enrolled in any class in the subject
+                    {
+                        classes: {
+                            some: {
+                                enrollments: {
+                                    some: {
+                                        studentId: userId
+                                    }
+                                }
+                            }   
+                        }
+                    }
+                ]
+            },
+           
+            select: {
+                id: true,
+                name: true,
+                code: true,
+                description: true,
+                departmentId: true,
+                department:true,
+                
+            }
+        });
+        res.status(200).json({ data: subjects });
+
+    } catch (error) {
+        console.error("Error fetching user subjects:", error);
+        res.status(500).json({ error: "An error occurred while fetching user subjects." }); 
+    }
+};
