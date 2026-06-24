@@ -8,6 +8,7 @@ import subjectsRouter from './routes/subjects';
 import usersRouter from './routes/user';
 import classesRouter from './routes/classes';
 import departmentsRouter from './routes/department';
+import enrollmentsControllers from './routes/enrollments'
 import cors from 'cors';
 import securityMiddleware from './middleware/security';
 import { toNodeHandler } from 'better-auth/node';
@@ -24,7 +25,7 @@ const allowedOrigins = [
 ];
 
 const corsOptions = {
-    origin: 'https://class-mgmt-frontend-v1.vercel.app',    
+    origin: 'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -46,6 +47,7 @@ app.use('/api/subjects', subjectsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/classes', classesRouter);
 app.use('/api/departments', departmentsRouter);
+app.use('/enrollments',enrollmentsControllers)
 
 // Allow legacy/root frontend paths in case the frontend is not using the /api prefix
 app.use('/subjects', subjectsRouter);

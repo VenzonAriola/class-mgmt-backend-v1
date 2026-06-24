@@ -9,5 +9,7 @@ router.get("/", getAllSubjects)
 
 router.get("/:id", getSubjectDetails)
 
+
+
 export default router;
 
