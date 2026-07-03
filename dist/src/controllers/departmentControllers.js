@@ -1,4 +1,11 @@
 import { prisma } from "../db/prisma";
+const normalizeQueryParam = (param) => {
+    if (typeof param === "string")
+        return param;
+    if (Array.isArray(param))
+        return param[0];
+    return undefined;
+};
 //Get All Departments
 export const getAllDepartments = async (req, res) => {
     try {
@@ -34,6 +41,185 @@ export const getAllDepartments = async (req, res) => {
     catch (error) {
         console.error("Error fetching departments:", error);
         res.status(500).json({ error: "An error occurred while fetching departments." });
+    }
+};
+//Get Department by ID
+export const getDepartmentDetails = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const departmentDetails = await prisma.department.findUnique({
+            where: {
+                id: Number(id)
+            },
+            include: {
+                subjects: true,
+                teachers: true
+            }
+        });
+        if (!departmentDetails) {
+            res.status(404).json({ error: "Department not found." });
+        }
+        res.status(200).json({ data: departmentDetails });
+    }
+    catch (error) {
+        console.error({ error: "Error fetching department details:" });
+        res.status(500).json({ error: "An error occurred while fetching department details" });
+    }
+};
+export const getDepartmentSubjects = async (req, res) => {
+    try {
+        const departmentId = Number(req.params.id);
+        if (!Number.isFinite(departmentId)) {
+            return res.status(400).json({ error: "Invalid department ID." });
+        }
+        const page = Number(normalizeQueryParam(req.query.page) ?? "1");
+        const limit = Number(normalizeQueryParam(req.query.limit) ?? "10");
+        const currentPage = Math.max(1, Number.isFinite(page) ? page : 1);
+        const limitPerPage = Math.max(1, Number.isFinite(limit) ? limit : 10);
+        const offset = (currentPage - 1) * limitPerPage;
+        const totalCount = await prisma.subjects.count({
+            where: { departmentId },
+        });
+        const subjects = await prisma.subjects.findMany({
+            where: { departmentId },
+            include: { department: true },
+            skip: offset,
+            take: limitPerPage,
+            orderBy: { createdAt: "desc" },
+        });
+        res.status(200).json({
+            data: subjects,
+            total: totalCount,
+        });
+    }
+    catch (error) {
+        console.error("Error fetching department subjects:", error);
+        res.status(500).json({ error: "An error occurred while fetching department subjects." });
+    }
+};
+export const getDepartmentClasses = async (req, res) => {
+    try {
+        const departmentId = Number(req.params.id);
+        if (!Number.isFinite(departmentId)) {
+            return res.status(400).json({ error: "Invalid department ID." });
+        }
+        const page = Number(normalizeQueryParam(req.query.page) ?? "1");
+        const limit = Number(normalizeQueryParam(req.query.limit) ?? "10");
+        const currentPage = Math.max(1, Number.isFinite(page) ? page : 1);
+        const limitPerPage = Math.max(1, Number.isFinite(limit) ? limit : 10);
+        const offset = (currentPage - 1) * limitPerPage;
+        const totalCount = await prisma.classes.count({
+            where: { subject: { departmentId } },
+        });
+        const classes = await prisma.classes.findMany({
+            where: { subject: { departmentId } },
+            include: {
+                subject: true,
+                teacher: true,
+            },
+            skip: offset,
+            take: limitPerPage,
+            orderBy: { createdAt: "desc" },
+        });
+        res.status(200).json({
+            data: classes,
+            total: totalCount,
+        });
+    }
+    catch (error) {
+        console.error("Error fetching department classes:", error);
+        res.status(500).json({ error: "An error occurred while fetching department classes." });
+    }
+};
+export const getDepartmentUsers = async (req, res) => {
+    try {
+        const departmentId = Number(req.params.id);
+        const role = normalizeQueryParam(req.query.role);
+        if (!Number.isFinite(departmentId)) {
+            return res.status(400).json({ error: "Invalid department ID." });
+        }
+        const page = Number(normalizeQueryParam(req.query.page) ?? "1");
+        const limit = Number(normalizeQueryParam(req.query.limit) ?? "10");
+        const currentPage = Math.max(1, Number.isFinite(page) ? page : 1);
+        const limitPerPage = Math.max(1, Number.isFinite(limit) ? limit : 10);
+        const offset = (currentPage - 1) * limitPerPage;
+        const teacherCondition = {
+            role: "teacher",
+            classes: {
+                some: {
+                    subject: { departmentId },
+                },
+            },
+        };
+        const studentCondition = {
+            role: "student",
+            enrollments: {
+                some: {
+                    class: {
+                        subject: { departmentId },
+                    },
+                },
+            },
+        };
+        let whereCondition;
+        if (role === "teacher") {
+            whereCondition = teacherCondition;
+        }
+        else if (role === "student") {
+            whereCondition = studentCondition;
+        }
+        else {
+            whereCondition = {
+                OR: [teacherCondition, studentCondition],
+            };
+        }
+        const totalCount = await prisma.user.count({ where: whereCondition });
+        const users = await prisma.user.findMany({
+            where: whereCondition,
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                image: true,
+            },
+            skip: offset,
+            take: limitPerPage,
+            orderBy: { createdAt: "desc" },
+        });
+        res.status(200).json({
+            data: users,
+            total: totalCount,
+        });
+    }
+    catch (error) {
+        console.error("Error fetching department users:", error);
+        res.status(500).json({ error: "An error occurred while fetching department users." });
+    }
+};
+// Create Department
+export const createDepartment = async (req, res) => {
+    try {
+        const { code, name, description } = req.body;
+        if (!code || !name) {
+            return res.status(400).json({ error: "Code and name are required." });
+        }
+        const newDepartment = await prisma.department.create({
+            data: {
+                code,
+                name,
+                description,
+            },
+        });
+        res.status(201).json({ data: newDepartment });
+    }
+    catch (error) {
+        const prismaError = error;
+        if (prismaError.code === "P2002") {
+            return res.status(409).json({ error: "A department with this code already exists." });
+        }
+        console.error("Error creating department:", error);
+        res.status(500).json({ error: "An error occurred while creating the department." });
     }
 };
 //# sourceMappingURL=departmentControllers.js.map

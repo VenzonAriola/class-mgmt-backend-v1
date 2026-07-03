@@ -12,6 +12,7 @@ import enrollmentsRouter from './routes/enrollments'
 import statsRouter from './routes/stats'
 import cors from 'cors';
 import securityMiddleware from './middleware/security';
+import authSessionMiddleware from './middleware/authSession';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './lib/auth';
 
@@ -41,6 +42,7 @@ app.all('/api/auth/*splat', toNodeHandler(auth));
 
 //body parser
 app.use(express.json());
+app.use(authSessionMiddleware);
 app.use(securityMiddleware);
 app.use(express.urlencoded({ extended: true }));
 
@@ -48,14 +50,16 @@ app.use('/api/subjects', subjectsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/classes', classesRouter);
 app.use('/api/departments', departmentsRouter);
-app.use('/api/enrollments',enrollmentsRouter)
-app.use('/api/stats',statsRouter);
+app.use('/api/enrollments', enrollmentsRouter);
+app.use('/api/stats', statsRouter);
 
 // Allow legacy/root frontend paths in case the frontend is not using the /api prefix
 app.use('/subjects', subjectsRouter);
 app.use('/users', usersRouter);
 app.use('/classes', classesRouter);
 app.use('/departments', departmentsRouter);
+app.use('/enrollments', enrollmentsRouter);
+app.use('/stats', statsRouter);
 connectDB()
 
 

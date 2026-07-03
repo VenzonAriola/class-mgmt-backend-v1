@@ -1,13 +1,16 @@
 import express from "express";
-import { getAllSubjects, getSubjectDetails } from "../controllers/subjectsContoller";
+import { createSubject, getAllSubjects, getSubjectDetails } from "../controllers/subjectsContoller";
 
 const router = express.Router();
 
+// Create Subject
+router.post("/", createSubject)
 
 //Get All Subjects
 router.get("/", getAllSubjects)
 
 router.get("/:id", getSubjectDetails)
+
 
 
 

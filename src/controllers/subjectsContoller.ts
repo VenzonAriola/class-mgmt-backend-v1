@@ -106,8 +106,14 @@ export const createSubject = async (req: Request, res: Response) => {
         if(!newSubject){
             return res.status(500).json({ error: "Failed to create subject." });
         }
-        res.status(201).json({ newSubject });
+        res.status(201).json({ data: newSubject });
     } catch (error) {
+        const prismaError = error as { code?: string };
+
+        if (prismaError.code === "P2002") {
+            return res.status(409).json({ error: "A subject with this code already exists." });
+        }
+
         console.error("Error creating subject:", error);
         res.status(500).json({ error: "An error occurred while creating the subject." });
     }

@@ -40,9 +40,10 @@ import { isDataView } from "node:util/types";
 export const postEnrollments = async (req: Request, res: Response) =>{
 
     try {
-        const {classId, studentId } = req.body;
+        const classId = Number(req.body.classId);
+        const studentId = String(req.body.studentId ?? "").trim();
 
-        if(!classId || studentId){
+        if (!Number.isFinite(classId) || !studentId) {
             return res.status(400).json({error:"classId and studentId are required"});
         }
 
@@ -100,7 +101,8 @@ export const postEnrollments = async (req: Request, res: Response) =>{
 export const joinEnrollment = async (req: Request, res: Response) =>{
 
   try{
-    const {inviteCode, studentId} = req.body;
+    const inviteCode = String(req.body.inviteCode ?? "").trim();
+    const studentId = String(req.body.studentId ?? "").trim();
 
     if(!inviteCode || !studentId){
       return res.status(400).json({error: "Invite code and student Id is required"})
@@ -108,7 +110,7 @@ export const joinEnrollment = async (req: Request, res: Response) =>{
 
     const classrecord = await prisma.classes.findUnique({
             where: {
-                id:inviteCode,
+                inviteCode,
             }
         })
 
@@ -124,7 +126,7 @@ export const joinEnrollment = async (req: Request, res: Response) =>{
 
         const existingEnrollment = await prisma.enrollments.findFirst({
             where: {
-                inviteCode,
+                classId: classrecord.id,
                 studentId
             },
             select: {
