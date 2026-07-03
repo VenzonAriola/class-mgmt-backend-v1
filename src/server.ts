@@ -27,7 +27,7 @@ const allowedOrigins = [
 ];
 
 const corsOptions = {
-    origin: 'http://localhost:5173',
+    origin: 'https://class-mgmt-frontend-v1.vercel.app',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
