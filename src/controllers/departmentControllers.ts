@@ -53,21 +53,107 @@ export const getAllDepartments = async (req:Request, res: Response) => {
 //Get Department by ID
 export const getDepartmentDetails = async (req: Request, res:Response) => {
     try{
-        const {id} = req.params;
-        const departmentDetails = await prisma.department.findUnique({
-            where:{
-                id:Number(id)
-            },
-            include:{
-                subjects: true,
-                teachers: true
-            }
-        })
-        if (!departmentDetails){
-            res.status(404).json({error: "Department not found."})
+        const departmentId = Number(req.params.id);
 
+        if (!Number.isFinite(departmentId)) {
+            return res.status(400).json({ error: "Invalid department ID." });
         }
-        res.status(200).json({data:departmentDetails})
+
+        const department = await prisma.department.findUnique({
+            where:{
+                id: departmentId
+            }
+        });
+
+        if (!department) {
+            return res.status(404).json({ error: "Department not found." });
+        }
+
+        const [subjects, classes, teachers, students, subjectCount, classCount, studentCount] = await Promise.all([
+            prisma.subjects.findMany({
+                where: { departmentId },
+                orderBy: { createdAt: "desc" },
+                take: 100,
+            }),
+            prisma.classes.findMany({
+                where: { subject: { departmentId } },
+                include: {
+                    subject: true,
+                    teacher: true,
+                },
+                orderBy: { createdAt: "desc" },
+                take: 100,
+            }),
+            prisma.user.findMany({
+                where: {
+                    role: "teacher",
+                    classes: {
+                        some: {
+                            subject: { departmentId },
+                        },
+                    },
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    role: true,
+                    image: true,
+                },
+                orderBy: { createdAt: "desc" },
+                take: 100,
+            }),
+            prisma.user.findMany({
+                where: {
+                    role: "student",
+                    enrollments: {
+                        some: {
+                            class: {
+                                subject: { departmentId },
+                            },
+                        },
+                    },
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    role: true,
+                    image: true,
+                },
+                orderBy: { createdAt: "desc" },
+                take: 100,
+            }),
+            prisma.subjects.count({ where: { departmentId } }),
+            prisma.classes.count({ where: { subject: { departmentId } } }),
+            prisma.user.count({
+                where: {
+                    role: "student",
+                    enrollments: {
+                        some: {
+                            class: {
+                                subject: { departmentId },
+                            },
+                        },
+                    },
+                },
+            }),
+        ]);
+
+        res.status(200).json({
+            data: {
+                department,
+                totals: {
+                    subjects: subjectCount,
+                    classes: classCount,
+                    enrolledStudents: studentCount,
+                },
+                subjects,
+                classes,
+                teachers,
+                students,
+            },
+        });
     }catch(error){
         console.error({error:"Error fetching department details:"});
         res.status(500).json({error:"An error occurred while fetching department details"})

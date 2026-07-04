@@ -46,20 +46,102 @@ export const getAllDepartments = async (req, res) => {
 //Get Department by ID
 export const getDepartmentDetails = async (req, res) => {
     try {
-        const { id } = req.params;
-        const departmentDetails = await prisma.department.findUnique({
+        const departmentId = Number(req.params.id);
+        if (!Number.isFinite(departmentId)) {
+            return res.status(400).json({ error: "Invalid department ID." });
+        }
+        const department = await prisma.department.findUnique({
             where: {
-                id: Number(id)
-            },
-            include: {
-                subjects: true,
-                teachers: true
+                id: departmentId
             }
         });
-        if (!departmentDetails) {
-            res.status(404).json({ error: "Department not found." });
+        if (!department) {
+            return res.status(404).json({ error: "Department not found." });
         }
-        res.status(200).json({ data: departmentDetails });
+        const [subjects, classes, teachers, students, subjectCount, classCount, studentCount] = await Promise.all([
+            prisma.subjects.findMany({
+                where: { departmentId },
+                orderBy: { createdAt: "desc" },
+                take: 100,
+            }),
+            prisma.classes.findMany({
+                where: { subject: { departmentId } },
+                include: {
+                    subject: true,
+                    teacher: true,
+                },
+                orderBy: { createdAt: "desc" },
+                take: 100,
+            }),
+            prisma.user.findMany({
+                where: {
+                    role: "teacher",
+                    classes: {
+                        some: {
+                            subject: { departmentId },
+                        },
+                    },
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    role: true,
+                    image: true,
+                },
+                orderBy: { createdAt: "desc" },
+                take: 100,
+            }),
+            prisma.user.findMany({
+                where: {
+                    role: "student",
+                    enrollments: {
+                        some: {
+                            class: {
+                                subject: { departmentId },
+                            },
+                        },
+                    },
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    role: true,
+                    image: true,
+                },
+                orderBy: { createdAt: "desc" },
+                take: 100,
+            }),
+            prisma.subjects.count({ where: { departmentId } }),
+            prisma.classes.count({ where: { subject: { departmentId } } }),
+            prisma.user.count({
+                where: {
+                    role: "student",
+                    enrollments: {
+                        some: {
+                            class: {
+                                subject: { departmentId },
+                            },
+                        },
+                    },
+                },
+            }),
+        ]);
+        res.status(200).json({
+            data: {
+                department,
+                totals: {
+                    subjects: subjectCount,
+                    classes: classCount,
+                    enrolledStudents: studentCount,
+                },
+                subjects,
+                classes,
+                teachers,
+                students,
+            },
+        });
     }
     catch (error) {
         console.error({ error: "Error fetching department details:" });
