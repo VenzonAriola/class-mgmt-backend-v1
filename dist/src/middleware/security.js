@@ -12,17 +12,17 @@ const securityMiddleware = async (req, res, next) => {
         let message;
         switch (role) {
             case "admin":
-                limit = 20;
-                message = 'Admin request limit exceeded(20 per minute). Slow down. ';
+                limit = 60;
+                message = 'Admin request limit exceeded(60 per minute). Slow down. ';
                 break;
             case "teacher":
             case "student":
-                limit = 10;
-                message = 'User request limit exceeded(10 per minute). Please wait.';
+                limit = 40;
+                message = 'User request limit exceeded(40 per minute). Please wait.';
                 break;
             default:
-                limit = 5;
-                message = 'Guest request limit exceeded(5 per minute). Please wait or sign up.';
+                limit = 20;
+                message = 'Guest request limit exceeded(20 per minute). Please wait or sign up.';
         }
         const client = aj.withRule(slidingWindow({
             mode: "LIVE",
