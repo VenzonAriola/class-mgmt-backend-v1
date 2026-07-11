@@ -1,10 +1,11 @@
 import express from 'express';
+import authorize from '../middleware/authorize';
 import { getClassDetails, getAllClasses, postClasses } from '../controllers/classesControllers';
 
 const router = express.Router();
 
 // POST Classes
-router.post('/', postClasses);
+router.post('/', authorize('admin', 'teacher'),postClasses);
 
 router.get('/', getAllClasses);
 
