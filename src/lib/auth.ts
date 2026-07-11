@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "../db/prisma";
-
+import { sendVerificationEmail } from "./email";
 
 export const auth = betterAuth({
     secret: process.env.BETTER_AUTH_SECRET!,
@@ -12,18 +12,27 @@ export const auth = betterAuth({
     },
     database: prismaAdapter(prisma, {
         provider: "postgresql",
-       
     }),
     emailAndPassword: {
         enabled: true,
+        requireEmailVerification: true,
+        autoSignIn: false,
     },
-
+    emailVerification: {
+        sendOnSignUp: true,
+        sendOnSignIn: true,
+        autoSignInAfterVerification: false,
+        expiresIn: 60 * 60 * 24,
+        async sendVerificationEmail({ user, url }) {
+            await sendVerificationEmail({ user, url });
+        },
+    },
     user: {
         additionalFields: {
             role: {
                 type: "string", required: true, defaultValue:"student", input:true,
             },imageCldPubId: {
-                type: "string", required: false,  input:true,
+                type: "string", required: false, input:true,
             },
         },
     },
