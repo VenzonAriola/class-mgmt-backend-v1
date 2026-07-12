@@ -38,19 +38,15 @@ export const buildVerificationEmailMessage = ({
 });
 
 export const createEmailTransport = () => {
-  const host = process.env.SMTP_HOST;
-  const port = Number(process.env.SMTP_PORT || 587);
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+  const user = process.env.GMAIL_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD;
 
-  if (!host || !user || !pass) {
-    throw new Error('SMTP email configuration is incomplete. Set SMTP_HOST, SMTP_USER, and SMTP_PASS.');
+  if (!user || !pass) {
+    throw new Error('Gmail email configuration is incomplete. Set GMAIL_USER and GMAIL_APP_PASSWORD.');
   }
 
   return nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
+    service: 'gmail',
     auth: {
       user,
       pass,
@@ -73,7 +69,7 @@ export const sendVerificationEmail = async ({
   });
 
   await transport.sendMail({
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    from: `"Class Management" <${process.env.GMAIL_USER}>`,
     to: message.to,
     subject: message.subject,
     text: message.text,
