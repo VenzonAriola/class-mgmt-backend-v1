@@ -1,4 +1,11 @@
 import nodemailer from 'nodemailer';
+import dns from 'node:dns';
+
+// Render (and many container platforms) don't have outbound IPv6 routing.
+// Node can still resolve AAAA (IPv6) records for smtp.gmail.com and try
+// those first, which fails with ENETUNREACH. Forcing IPv4-first resolution
+// avoids that.
+dns.setDefaultResultOrder('ipv4first');
 
 export type VerificationEmailPayload = {
   to: string;
@@ -46,7 +53,10 @@ export const createEmailTransport = () => {
   }
 
   return nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    family: 4, // force IPv4 — Render's network has no outbound IPv6 route
     auth: {
       user,
       pass,
