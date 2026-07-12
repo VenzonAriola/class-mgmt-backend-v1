@@ -23,9 +23,16 @@ export const auth = betterAuth({
         sendOnSignIn: true,
         autoSignInAfterVerification: false,
         expiresIn: 60 * 60 * 24,
+        // src/lib/auth.ts
         async sendVerificationEmail({ user, url }) {
-            await sendVerificationEmail({ user, url });
-        },
+            console.log(`[auth] Attempting to send verification email to ${user.email}`);
+            try {
+                await sendVerificationEmail({ user, url });
+                console.log(`[auth] Verification email sent to ${user.email}`);
+             } catch (err) {
+                console.error(`[auth] FAILED to send verification email to ${user.email}:`, err);
+            }
+},
     },
     user: {
         additionalFields: {
