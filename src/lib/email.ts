@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import type SMTPTransport from 'nodemailer/lib/smtp-transport';
 import dns from 'node:dns';
 
 // Render (and many container platforms) don't have outbound IPv6 routing.
@@ -52,16 +53,22 @@ export const createEmailTransport = () => {
     throw new Error('Gmail email configuration is incomplete. Set GMAIL_USER and GMAIL_APP_PASSWORD.');
   }
 
-  return nodemailer.createTransport({
+  const options: SMTPTransport.Options = {
     host: 'smtp.gmail.com',
     port: 465,
     secure: true,
-    family: 4, // force IPv4 — Render's network has no outbound IPv6 route
     auth: {
       user,
       pass,
     },
-  });
+  };
+
+  // 'family' isn't part of @types/nodemailer's Options interface, but nodemailer
+  // does forward it to the underlying socket connection at runtime. Assign it
+  // separately to avoid tripping TypeScript's excess-property check.
+  (options as SMTPTransport.Options & { family?: number }).family = 4;
+
+  return nodemailer.createTransport(options);
 };
 
 export const sendVerificationEmail = async ({
